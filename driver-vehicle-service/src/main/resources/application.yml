@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: driver-vehicle-service
+  datasource:
+    url: ${DRIVER_DB_URL:jdbc:postgresql://localhost:5432/driver_db}
+    username: ${DRIVER_DB_USERNAME:postgres}
+    password: ${DRIVER_DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+
+server:
+  port: ${DRIVER_PORT:8082}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

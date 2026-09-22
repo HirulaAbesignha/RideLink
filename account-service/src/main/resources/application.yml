@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: account-service
+  datasource:
+    url: ${ACCOUNT_DB_URL:jdbc:postgresql://localhost:5432/account_db}
+    username: ${ACCOUNT_DB_USERNAME:postgres}
+    password: ${ACCOUNT_DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+
+server:
+  port: ${ACCOUNT_PORT:8081}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
