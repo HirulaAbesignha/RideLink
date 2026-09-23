@@ -201,6 +201,14 @@ The member who opens the PR is responsible for fixing failing tests.
 
 ## 7. Push and open a pull request
 
+Before pushing, run the repository checker from the RideLink root:
+
+```powershell
+.\check-before-pr.cmd
+```
+
+It checks the branch, Git status, latest `develop`, whitespace, forbidden/generated files, large files, conflict markers, obvious secrets, API-contract JSON and tests for every changed service. Do not request a PR until it reports `Pre-PR check PASSED`.
+
 Push the feature branch:
 
 ```powershell
