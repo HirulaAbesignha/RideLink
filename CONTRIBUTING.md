@@ -341,7 +341,9 @@ Stop and ask the group leader to help move the commit. Do not reset or force pus
 
 Immediately tell the group leader, rotate the secret, remove it from the code and document the incident. Deleting it in a later commit does not remove it from earlier history.
 
-## 13. Required contribution evidence per member
+## 13. Team contribution evidence target
+
+The assignment does not prescribe a minimum number of commits or pull requests. The targets below are the group's practical plan for producing continuous, reviewable evidence; quality and understanding remain more important than counts.
 
 Every member should finish with all of the following:
 
