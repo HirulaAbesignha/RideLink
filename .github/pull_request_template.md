@@ -24,6 +24,7 @@ Describe the implemented behaviour and the reason for the change.
 
 List the exact tests or Postman requests run and their results.
 
+- [ ] I ran `check-before-pr.cmd` from the repository root and it passed.
 - [ ] Service unit tests pass locally.
 - [ ] CI passes.
 - [ ] Swagger documentation was updated when the API changed.
