@@ -15,7 +15,7 @@ Backend microservices group assignment for IT3130 Application Development.
 
 | Directory | Owner | Port | Database | Main responsibility |
 |---|---|---:|---|---|
-| `account-service` | Member 1 - add name/ID | 8081 | `account_db` | Accounts, login, JWTs, roles and profiles |
+| `account-service` | Shasrika - add name/ID | 8081 | `account_db` | Accounts, login, JWTs, roles and profiles |
 | `driver-vehicle-service` | Member 2 - add name/ID | 8082 | `driver_db` | Vehicles, availability, service area and simulated location |
 | `ride-management-service` | Member 3 - add name/ID | 8083 | `ride_db` | Ride requests, assignment and lifecycle |
 | `fare-payment-service` | Member 4 - add name/ID | 8084 | `payment_db` | Fare estimates, final fares, simulated payments and receipts |
