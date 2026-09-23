@@ -79,8 +79,10 @@ Do not push business features directly to `main` or `develop`.
 
 ## Documentation and shared evidence
 
+- `CONTRIBUTING.md`: mandatory beginner workflow for branches, commits, pull requests, reviews and contribution evidence.
 - `docs/TEAM_START_HERE.md`: beginner setup and first meeting checklist.
 - `docs/api-contracts/API_CONTRACT.md`: decisions that must be agreed before integration.
+- `docs/CONTRIBUTION_LOG.md`: member, PR, review and final contribution record.
 - `docs/architecture/`: architecture and sequence diagrams.
 - `docs/evidence/`: non-sensitive CI, test and integration evidence.
 - `postman/`: exported Postman collection and example environment.

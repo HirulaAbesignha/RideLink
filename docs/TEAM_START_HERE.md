@@ -1,5 +1,7 @@
 # Team start here
 
+Every member must also read the root `CONTRIBUTING.md` before creating a feature branch. It contains the required commit, pull-request, review and contribution-evidence workflow.
+
 ## Step 1: identify every contributor
 
 Replace the placeholders in the root README with each member's full name and student ID. Every member must use their own GitHub account and Git author identity.
