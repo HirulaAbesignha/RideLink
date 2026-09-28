@@ -1,0 +1,177 @@
+{
+  "info": {
+    "_postman_id": "81cf87c8-777c-4a54-b245-cd440109c054",
+    "name": "RideLink - Driver & Vehicle Service",
+    "description": "Member 2 demonstration requests. Run the numbered requests in order after obtaining a DRIVER JWT from Account Service.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01 - Service status",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{driverBaseUrl}}/api/v1/status"
+      }
+    },
+    {
+      "name": "02 - Create my driver profile",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "  pm.environment.set('driverId', pm.response.json().driverId);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{driverToken}}" },
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-Correlation-Id", "value": "{{$guid}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"serviceArea\": \"COLOMBO\",\n  \"locationName\": \"Bambalapitiya\",\n  \"latitude\": 6.8935,\n  \"longitude\": 79.8552\n}"
+        },
+        "url": "{{driverBaseUrl}}/api/v1/drivers/me/profile"
+      }
+    },
+    {
+      "name": "03 - Add or replace my vehicle",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{driverToken}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"registrationNumber\": \"CAB-1234\",\n  \"vehicleType\": \"CAR\",\n  \"manufacturer\": \"Toyota\",\n  \"model\": \"Aqua\",\n  \"colour\": \"White\",\n  \"seatCapacity\": 4,\n  \"status\": \"ACTIVE\"\n}"
+        },
+        "url": "{{driverBaseUrl}}/api/v1/drivers/me/vehicle"
+      }
+    },
+    {
+      "name": "04 - Update my location",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{driverToken}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"serviceArea\": \"COLOMBO\",\n  \"locationName\": \"Wellawatte\",\n  \"latitude\": 6.8747,\n  \"longitude\": 79.8605\n}"
+        },
+        "url": "{{driverBaseUrl}}/api/v1/drivers/me/location"
+      }
+    },
+    {
+      "name": "05 - Go available",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{driverToken}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"availability\": \"AVAILABLE\"\n}"
+        },
+        "url": "{{driverBaseUrl}}/api/v1/drivers/me/availability"
+      }
+    },
+    {
+      "name": "06 - View my profile",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{driverToken}}" }
+        ],
+        "url": "{{driverBaseUrl}}/api/v1/drivers/me"
+      }
+    },
+    {
+      "name": "07 - Find eligible drivers",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "X-Service-Token", "value": "{{serviceToken}}" }
+        ],
+        "url": "{{driverBaseUrl}}/internal/v1/drivers/eligible?serviceArea=COLOMBO&seatCount=2"
+      }
+    },
+    {
+      "name": "08 - Reserve driver",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "X-Service-Token", "value": "{{serviceToken}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"rideId\": \"{{rideId}}\"\n}"
+        },
+        "url": "{{driverBaseUrl}}/internal/v1/drivers/{{driverId}}/reservations"
+      }
+    },
+    {
+      "name": "09 - Replay same reservation",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "X-Service-Token", "value": "{{serviceToken}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"rideId\": \"{{rideId}}\"\n}"
+        },
+        "url": "{{driverBaseUrl}}/internal/v1/drivers/{{driverId}}/reservations"
+      }
+    },
+    {
+      "name": "10 - Release driver",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "X-Service-Token", "value": "{{serviceToken}}" }
+        ],
+        "url": "{{driverBaseUrl}}/internal/v1/drivers/{{driverId}}/reservations/{{rideId}}"
+      }
+    },
+    {
+      "name": "Negative - wrong service token",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "X-Service-Token", "value": "wrong-token" }
+        ],
+        "url": "{{driverBaseUrl}}/internal/v1/drivers/eligible?serviceArea=COLOMBO&seatCount=2"
+      }
+    },
+    {
+      "name": "Negative - invalid location",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{driverToken}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"serviceArea\": \"\",\n  \"locationName\": \"\",\n  \"latitude\": 95,\n  \"longitude\": 79.8605\n}"
+        },
+        "url": "{{driverBaseUrl}}/api/v1/drivers/me/location"
+      }
+    }
+  ]
+}
