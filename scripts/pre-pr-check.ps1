@@ -250,6 +250,7 @@ try {
     }
 
     Write-Host "`nPre-PR check PASSED. You can push and request a pull request." -ForegroundColor Green
+    exit 0
 }
 finally {
     Pop-Location
