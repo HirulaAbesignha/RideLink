@@ -1,8 +1,8 @@
 # Postman
 
-Export the final shared collection and example environment into this directory.
+`RideLink-Driver-Service.postman_collection.json` contains the complete Member 2 demonstration flow and required negative requests. Import it together with `RideLink-Local.postman_environment.json`.
 
-The environment must contain harmless example values only. Do not commit real passwords, JWTs or database credentials.
+The environment contains harmless placeholders only. Paste a current driver JWT and the same local service token used by the applications before running the collection. Never commit real passwords, JWTs or tokens.
 
 Suggested variables:
 

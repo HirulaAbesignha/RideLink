@@ -6,6 +6,7 @@ import com.ridelink.driver.api.dto.ReservationResponse;
 import com.ridelink.driver.service.DriverAssignmentService;
 import com.ridelink.driver.service.ReservationSaveResult;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -30,6 +31,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/internal/v1/drivers")
 @Tag(name = "Driver assignment")
+@SecurityRequirement(name = "serviceToken")
 public class InternalDriverController {
 
     private final DriverAssignmentService service;
