@@ -117,7 +117,8 @@ try {
     foreach ($file in $trackedFiles) {
         $path = Join-Path $repoRoot $file
         if (Test-Path -LiteralPath $path -PathType Leaf) {
-            $item = Get-Item -LiteralPath $path
+            # PowerShell treats dotfiles as hidden on Linux runners.
+            $item = Get-Item -LiteralPath $path -Force
             if ($item.Length -gt 5MB) {
                 $largeFiles += "$file ($([math]::Round($item.Length / 1MB, 2)) MB)"
             }
@@ -153,10 +154,10 @@ try {
     foreach ($file in $changedFiles) {
         $path = Join-Path $repoRoot $file
         if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { continue }
-        $item = Get-Item -LiteralPath $path
+        $item = Get-Item -LiteralPath $path -Force
         if ($item.Length -gt 5MB) { continue }
         try {
-            $content = Get-Content -LiteralPath $path -Raw -ErrorAction Stop
+            $content = Get-Content -LiteralPath $path -Raw -Force -ErrorAction Stop
             foreach ($pattern in $secretPatterns) {
                 if ($content -match $pattern) {
                     $secretFindings += "$file matched secret pattern"
