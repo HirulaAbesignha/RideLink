@@ -41,8 +41,10 @@ public class DriverAssignmentService {
                 normalizedArea, seatCount, DriverAvailability.AVAILABLE, VehicleStatus.ACTIVE);
 
         List<UUID> driverIds = drivers.stream().map(DriverProfile::getId).toList();
-        Map<UUID, Vehicle> vehicles = vehicleRepository.findAllByDriverIdIn(driverIds).stream()
-                .collect(Collectors.toMap(Vehicle::getDriverId, Function.identity()));
+        Map<UUID, Vehicle> vehicles = driverIds.isEmpty()
+                ? Map.of()
+                : vehicleRepository.findAllByDriverIdIn(driverIds).stream()
+                    .collect(Collectors.toMap(Vehicle::getDriverId, Function.identity()));
 
         List<EligibleDriverResponse> responses = drivers.stream()
                 .map(driver -> toEligibleResponse(driver, vehicles.get(driver.getId())))

@@ -77,6 +77,11 @@ public class DriverController {
     }
 
     private UUID subject(Jwt jwt) {
-        return UUID.fromString(jwt.getSubject());
+        try {
+            return UUID.fromString(jwt.getSubject());
+        } catch (IllegalArgumentException exception) {
+            throw new com.ridelink.driver.api.error.ApiException(
+                    HttpStatus.UNAUTHORIZED, "INVALID_TOKEN", "The token subject is invalid");
+        }
     }
 }
