@@ -1,8 +1,11 @@
 # Postman
 
-`RideLink-Driver-Service.postman_collection.json` contains the complete Member 2 demonstration flow and required negative requests. Import it together with `RideLink-Local.postman_environment.json`.
+The service collections contain each member's demonstration flow and negative requests. Import the collection you need together with `RideLink-Local.postman_environment.json`.
 
-The environment contains harmless placeholders only. Paste a current driver JWT and the same local service token used by the applications before running the collection. Never commit real passwords, JWTs or tokens.
+- `RideLink-Account-Service.postman_collection.json`: Member 1 registration, login, profile, admin and internal summary flow.
+- `RideLink-Driver-Service.postman_collection.json`: Member 2 profile, vehicle, availability and reservation flow.
+
+The environment contains local demonstration placeholders only. Use the same local service token and admin bootstrap credentials used by the applications. Never commit real passwords, JWTs or tokens.
 
 Suggested variables:
 
