@@ -9,3 +9,14 @@ spring:
       ddl-auto: validate
   flyway:
     enabled: true
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
+
+security:
+  jwt:
+    secret: test-jwt-secret-that-is-longer-than-thirty-two-characters
+    issuer: ridelink-account-service
+    expiry-seconds: 3600
+  internal:
+    service-token: test-service-token-that-is-longer-than-thirty-two-characters

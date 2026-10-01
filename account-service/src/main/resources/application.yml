@@ -11,9 +11,20 @@ spring:
     open-in-view: false
   flyway:
     enabled: true
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
 
 server:
   port: ${ACCOUNT_PORT:8081}
+
+security:
+  jwt:
+    secret: ${JWT_SECRET}
+    issuer: ridelink-account-service
+    expiry-seconds: 3600
+  internal:
+    service-token: ${SERVICE_TOKEN}
 
 springdoc:
   swagger-ui:
