@@ -8,6 +8,8 @@ import com.ridelink.account.api.dto.UpdateAccountStatusRequest;
 import com.ridelink.account.api.error.ApiException;
 import com.ridelink.account.domain.AccountRole;
 import com.ridelink.account.service.AccountService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -48,17 +50,20 @@ public class AccountController {
     }
 
     @GetMapping("/me")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public AccountResponse getOwnProfile(@AuthenticationPrincipal Jwt jwt) {
         return accountService.getOwnProfile(subject(jwt));
     }
 
     @PatchMapping("/me")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public AccountResponse updateOwnProfile(@AuthenticationPrincipal Jwt jwt,
                                             @Valid @RequestBody UpdateAccountProfileRequest request) {
         return accountService.updateOwnProfile(subject(jwt), request);
     }
 
     @PatchMapping("/{accountId}/status")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public AccountStatusResponse changeStatus(@PathVariable UUID accountId,
                                               @AuthenticationPrincipal Jwt jwt,
                                               @Valid @RequestBody UpdateAccountStatusRequest request) {

@@ -26,6 +26,13 @@ security:
   internal:
     service-token: ${SERVICE_TOKEN}
 
+bootstrap:
+  admin:
+    email: ${BOOTSTRAP_ADMIN_EMAIL:}
+    password: ${BOOTSTRAP_ADMIN_PASSWORD:}
+    full-name: ${BOOTSTRAP_ADMIN_FULL_NAME:}
+    phone: ${BOOTSTRAP_ADMIN_PHONE:}
+
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
