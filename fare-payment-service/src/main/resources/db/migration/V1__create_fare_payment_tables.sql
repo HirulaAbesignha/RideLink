@@ -6,8 +6,8 @@ CREATE TABLE fare_estimates (
     amount NUMERIC(12,2) NOT NULL,
     currency VARCHAR(3) NOT NULL,
     rule_version VARCHAR(50) NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL,
-    expires_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
 
     CONSTRAINT chk_estimate_distance
         CHECK (distance_km >= 0.10 AND distance_km <= 100.00),
@@ -27,7 +27,7 @@ CREATE TABLE final_fares (
     amount NUMERIC(12,2) NOT NULL,
     currency VARCHAR(3) NOT NULL,
     rule_version VARCHAR(50) NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
 
     CONSTRAINT chk_final_fare_distance
         CHECK (distance_km >= 0.10 AND distance_km <= 100.00),
@@ -41,13 +41,13 @@ CREATE TABLE final_fares (
 
 CREATE TABLE payments (
     payment_id UUID PRIMARY KEY,
-    ride_id UUID NOT NULL UNIQUE,
+    ride_id UUID NOT NULL,
     amount NUMERIC(12,2) NOT NULL,
     currency VARCHAR(3) NOT NULL,
     status VARCHAR(20) NOT NULL,
     method_label VARCHAR(30) NOT NULL,
     idempotency_key VARCHAR(255) NOT NULL UNIQUE,
-    recorded_at TIMESTAMPTZ NOT NULL,
+    recorded_at TIMESTAMP WITH TIME ZONE NOT NULL,
 
     CONSTRAINT chk_payment_amount
         CHECK (amount >= 0),
@@ -72,7 +72,7 @@ CREATE TABLE receipts (
     currency VARCHAR(3) NOT NULL,
     payment_status VARCHAR(20) NOT NULL,
     method_label VARCHAR(30) NOT NULL,
-    issued_at TIMESTAMPTZ NOT NULL,
+    issued_at TIMESTAMP WITH TIME ZONE NOT NULL,
     notice VARCHAR(255) NOT NULL,
 
     CONSTRAINT chk_receipt_amount

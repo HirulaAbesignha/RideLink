@@ -11,6 +11,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 import com.ridelink.fare.dto.ReceiptResponse;
+import com.ridelink.fare.exception.FareApiException;
 import com.ridelink.fare.service.ReceiptService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,7 +35,15 @@ public class ReceiptController {
             @AuthenticationPrincipal Jwt jwt) {
 
         return ResponseEntity.ok(
-                receiptService.getReceipt(paymentId, UUID.fromString(jwt.getSubject()),
+                receiptService.getReceipt(paymentId, accountId(jwt),
                         "ADMIN".equals(jwt.getClaimAsString("role"))));
+    }
+
+    private UUID accountId(Jwt jwt) {
+        try {
+            return UUID.fromString(jwt.getSubject());
+        } catch (IllegalArgumentException ex) {
+            throw new FareApiException(401, "INVALID_TOKEN", "The token subject must be a UUID");
+        }
     }
 }
