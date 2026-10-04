@@ -209,6 +209,43 @@ class RideApiIntegrationTests {
                 .isEqualTo(RideStatus.IN_PROGRESS);
     }
 
+    @Test
+    void passengerCanListAndCancelAnAssignedRide() throws Exception {
+        UUID passengerId = UUID.randomUUID();
+        UUID driverId = UUID.randomUUID();
+        UUID estimateId = UUID.randomUUID();
+        stubEstimate(estimateId);
+        when(driverClient.findEligible("COLOMBO", 2)).thenReturn(List.of(
+                new EligibleDriver(driverId, UUID.randomUUID(), "COLOMBO", "Fort", "CAR", 4)));
+        when(driverClient.reserve(eq(driverId), any(UUID.class))).thenReturn(true);
+
+        MvcResult created = mockMvc.perform(post("/api/v1/rides")
+                        .with(userJwt(passengerId, "PASSENGER"))
+                        .header("Idempotency-Key", UUID.randomUUID())
+                        .contentType(MediaType.APPLICATION_JSON).content(createBody(estimateId)))
+                .andExpect(status().isCreated())
+                .andReturn();
+        UUID rideId = UUID.fromString(json(created, "rideId"));
+
+        mockMvc.perform(get("/api/v1/rides?status=ASSIGNED&page=0&size=20")
+                        .with(userJwt(passengerId, "PASSENGER")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.content[0].rideId").value(rideId.toString()));
+        mockMvc.perform(get("/api/v1/rides").with(userJwt(UUID.randomUUID(), "PASSENGER")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(0));
+        mockMvc.perform(post("/api/v1/rides/{id}/cancel", rideId)
+                        .with(userJwt(passengerId, "PASSENGER"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"reason\":\"Plans changed\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("CANCELLED"))
+                .andExpect(jsonPath("$.cancellationReason").value("Plans changed"));
+
+        verify(driverClient).release(driverId, rideId);
+    }
+
     private void stubEstimate(UUID estimateId) {
         when(fareClient.getEstimate(estimateId)).thenReturn(new FareEstimateResponse(
                 estimateId, "Wellawatte", "Colombo Fort", new BigDecimal("10.50"),
