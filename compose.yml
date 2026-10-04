@@ -1,0 +1,58 @@
+services:
+  account-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: account_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${ACCOUNT_DB_PASSWORD:-ridelink-local-only}
+    ports: ["55431:5432"]
+    volumes: [account-db-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d account_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+  driver-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: driver_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DRIVER_DB_PASSWORD:-ridelink-local-only}
+    ports: ["55432:5432"]
+    volumes: [driver-db-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d driver_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+  ride-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ride_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${RIDE_DB_PASSWORD:-ridelink-local-only}
+    ports: ["55433:5432"]
+    volumes: [ride-db-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ride_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+  payment-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: payment_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${PAYMENT_DB_PASSWORD:-ridelink-local-only}
+    ports: ["55434:5432"]
+    volumes: [payment-db-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d payment_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+volumes:
+  account-db-data:
+  driver-db-data:
+  ride-db-data:
+  payment-db-data:

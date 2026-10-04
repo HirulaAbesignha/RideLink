@@ -1,94 +1,107 @@
 # RideLink
 
-Backend microservices group assignment for IT3130 Application Development.
-
-## Important rules
-
-- All four services use Java and Spring Boot.
-- Each service owns a separate database.
-- Services communicate through documented APIs, never through another service's database.
-- Swagger UI and Postman are the demonstration clients. No frontend is required.
-- Do not commit passwords, tokens, connection strings with secrets, build output or dependency folders.
-- Every member works through their own Git identity, feature branches, pull requests and peer reviews.
+RideLink is the backend for the IT3130 Application Development group assignment. It uses four Java and Spring Boot microservices. Each service owns a separate PostgreSQL database and communicates with the other services only through documented REST APIs.
 
 ## Services
 
-| Directory | Owner | Port | Database | Main responsibility |
+| Directory | Owner | Port | Database | Responsibility |
 |---|---|---:|---|---|
-| `account-service` | Shasrika - add name/ID | 8081 | `account_db` | Accounts, login, JWTs, roles and profiles |
-| `driver-vehicle-service` | Hirula Abesignha (Member 2) | 8082 | `driver_db` | Vehicles, availability, service area and simulated location |
-| `ride-management-service` | sarvithan - add name/ID | 8083 | `ride_db` | Ride requests, assignment and lifecycle |
-| `fare-payment-service` | Member 4 - add name/ID | 8084 | `payment_db` | Fare estimates, final fares, simulated payments and receipts |
+| `account-service` | Member 1 | 8081 | `account_db` | Accounts, login, JWTs, roles and profiles |
+| `driver-vehicle-service` | Hirula Abesignha, Member 2 | 8082 | `driver_db` | Drivers, vehicles, availability and location |
+| `ride-management-service` | Member 3 | 8083 | `ride_db` | Ride requests, driver assignment and lifecycle |
+| `fare-payment-service` | Member 4 | 8084 | `payment_db` | Estimates, final fares, simulated payments and receipts |
 
-## Technology baseline
+Add every member's full name and student ID to the final report and contribution log before submission.
 
-- Java 17
-- Spring Boot 4.0.8
+## Technology
+
+- Java 17 and Spring Boot 4.0.8
 - Maven Wrapper
 - Spring Web MVC, Validation, Security and Data JPA
-- PostgreSQL and Flyway
-- springdoc OpenAPI/Swagger UI
-- JUnit and an in-memory H2 test profile
+- PostgreSQL with Flyway migrations
+- HS256 JWTs for users and a shared service token for internal APIs
+- Swagger UI and Postman for demonstration
+- JUnit, MockMvc and H2 in PostgreSQL compatibility mode for automated tests
 
-The generated starter applications are deliberately small. Each owner must implement, test and document their assigned business service.
+No service reads another service's database. Cross-service references are UUID values and are checked through internal REST endpoints.
 
-If your laboratory sessions prescribed a specific Java or Spring Boot version, update all four services together before business development begins and record that decision in the report.
+## Start the databases
 
-## First-time setup
-
-1. Install Java 17 and PostgreSQL.
-2. Clone this repository.
-3. Create the four databases shown above using PostgreSQL or pgAdmin.
-4. Set the database password environment variable for the service you are running.
-5. Run its tests before writing business code.
-
-Example for the Driver & Vehicle Service in PowerShell:
+Docker Compose creates four separate PostgreSQL containers and four separate named volumes:
 
 ```powershell
-cd driver-vehicle-service
-$env:DRIVER_DB_PASSWORD = "your-local-postgres-password"
-.\mvnw.cmd test
+docker compose up -d
+docker compose ps
+```
+
+The host ports are 55431, 55432, 55433 and 55434. Copy `.env.example` values into your terminal or IDE environment. Use the same `JWT_SECRET` and `SERVICE_TOKEN` in all four services.
+
+If Docker is unavailable, create `account_db`, `driver_db`, `ride_db` and `payment_db` in a local PostgreSQL installation and change the four database URLs.
+
+## Start the services
+
+Open four PowerShell terminals. Set the environment values in each terminal, then start the services in this order:
+
+1. Account Service
+2. Driver & Vehicle Service
+3. Fare & Payment Service
+4. Ride Management Service
+
+Run a service from its directory:
+
+```powershell
 .\mvnw.cmd spring-boot:run
 ```
 
-Then open `http://localhost:8082/swagger-ui.html`.
+| Service | Health | Swagger UI |
+|---|---|---|
+| Account | http://localhost:8081/actuator/health | http://localhost:8081/swagger-ui.html |
+| Driver | http://localhost:8082/actuator/health | http://localhost:8082/swagger-ui.html |
+| Ride | http://localhost:8083/actuator/health | http://localhost:8083/swagger-ui.html |
+| Fare | http://localhost:8084/actuator/health | http://localhost:8084/swagger-ui.html |
 
-## Branch workflow
+## Run all tests
 
-The recommended branches are `main`, `develop` and short-lived feature branches.
+Run this command inside each service directory:
 
-```text
-main
-  └── develop
-        ├── feature/account-registration
-        ├── feature/driver-profile
-        ├── feature/ride-lifecycle
-        └── feature/fare-estimation
+```powershell
+.\mvnw.cmd clean test
 ```
 
-For every change:
+Before a pull request, run the repository checker from the root:
 
-1. Pull the latest `develop`.
-2. Create a feature branch.
-3. Make small, meaningful commits.
-4. Push the branch and open a pull request into `develop`.
-5. Ask a different member to review it.
-6. Merge only after the CI checks pass.
+```powershell
+.\scripts\pre-pr-check.ps1 -BaseRef origin/develop
+```
 
-Do not push business features directly to `main` or `develop`.
+The GitHub Actions workflows repeat the repository checks and all four service test suites.
 
-## Documentation and shared evidence
+## Demonstration flow
 
-- `CONTRIBUTING.md`: mandatory beginner workflow for branches, commits, pull requests, reviews and contribution evidence.
-- `docs/TEAM_START_HERE.md`: beginner setup and first meeting checklist.
-- `docs/api-contracts/API_CONTRACT.md`: decisions that must be agreed before integration.
-- `docs/CONTRIBUTION_LOG.md`: member, PR, review and final contribution record.
-- `docs/REPOSITORY_PROTECTION.md`: exact owner-only `main` and team-reviewed `develop` protection setup.
-- `docs/architecture/`: architecture and sequence diagrams.
-- `docs/evidence/`: non-sensitive CI, test and integration evidence.
-- `postman/`: exported Postman collection and example environment.
+1. Register and log in a passenger and driver through Account Service.
+2. Create the driver profile and vehicle, then set the driver to `AVAILABLE`.
+3. Create a fare estimate as the passenger.
+4. Create a ride with the estimate ID. Ride Service validates the estimate and reserves an eligible driver.
+5. Accept, start and complete the ride as the assigned driver.
+6. Record a simulated successful payment as the passenger.
+7. Retrieve the receipt.
 
-## Submission readiness
+Import the files in `postman/` and run their numbered requests. The API decisions and negative cases are documented in `docs/api-contracts/API_CONTRACT.md`.
 
-The assessed version must be an integrated commit on `main` with a release tag. All four services must build and test in CI. The root README, final report, Swagger documentation and Postman collection must match the tagged code.
+## Repository documents
 
+- `CONTRIBUTING.md` explains branches, commits and pull requests.
+- `docs/api-contracts/API_CONTRACT.md` is the shared API baseline.
+- `docs/CONTRIBUTION_LOG.md` records individual work and evidence.
+- `docs/architecture/` contains the architecture and request flow.
+- `docs/evidence/` stores non-sensitive test and CI evidence.
+- `postman/` contains the local environment and service collections.
+
+## Submission checklist
+
+- Replace remaining member name and student ID placeholders.
+- Confirm all four GitHub Actions service jobs pass on the final pull request.
+- Demonstrate the full flow and required negative cases in Postman.
+- Make sure Swagger, the API contract, the final report and the code describe the same endpoints.
+- Merge the assessed commit into `main` and create the agreed release tag.
+- Confirm no passwords, JWTs, service tokens, database volumes or build output are committed.

@@ -1,0 +1,264 @@
+{
+  "info": {
+    "_postman_id": "2397078f-15ae-4a8f-b467-678bd23e37dc",
+    "name": "RideLink - Fare & Payment Service",
+    "description": "Member 4 estimate, final fare, simulated payment and receipt workflow.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01 - Service status",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{fareBaseUrl}}/api/v1/status"
+      }
+    },
+    {
+      "name": "02 - Create fare estimate",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estimate created', () => { pm.response.to.have.status(201); pm.expect(pm.response.json().amount).to.eql(1090); });",
+              "if (pm.response.code === 201) { pm.environment.set('estimateId', pm.response.json().estimateId); }"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{passengerToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"pickup\": \"Wellawatte\",\n  \"destination\": \"Colombo Fort\",\n  \"distanceKm\": 10.50\n}"
+        },
+        "url": "{{fareBaseUrl}}/api/v1/fares/estimates"
+      }
+    },
+    {
+      "name": "03 - Validate estimate internally",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Service-Token",
+            "value": "{{serviceToken}}"
+          }
+        ],
+        "url": "{{fareBaseUrl}}/internal/v1/fares/estimates/{{estimateId}}"
+      }
+    },
+    {
+      "name": "04 - View final fare after ride completion",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{passengerToken}}"
+          }
+        ],
+        "url": "{{fareBaseUrl}}/api/v1/fares/rides/{{rideId}}"
+      }
+    },
+    {
+      "name": "05 - Record successful simulated payment",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Payment recorded', () => { pm.response.to.have.status(201); pm.expect(pm.response.json().status).to.eql('PAID'); });",
+              "if (pm.response.code === 201) { pm.environment.set('paymentId', pm.response.json().paymentId); }"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{passengerToken}}"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{$guid}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"rideId\": \"{{rideId}}\",\n  \"simulationOutcome\": \"SUCCESS\",\n  \"methodLabel\": \"SIMULATED_CARD\"\n}"
+        },
+        "url": "{{fareBaseUrl}}/api/v1/payments"
+      }
+    },
+    {
+      "name": "06 - Retrieve receipt",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Receipt returned', () => { pm.response.to.have.status(200); pm.expect(pm.response.json().paymentStatus).to.eql('PAID'); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{passengerToken}}"
+          }
+        ],
+        "url": "{{fareBaseUrl}}/api/v1/payments/{{paymentId}}/receipt"
+      }
+    },
+    {
+      "name": "Negative - invalid distance",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Distance validation is enforced', () => pm.response.to.have.status(400));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{passengerToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"pickup\": \"Wellawatte\",\n  \"destination\": \"Colombo Fort\",\n  \"distanceKm\": 0\n}"
+        },
+        "url": "{{fareBaseUrl}}/api/v1/fares/estimates"
+      }
+    },
+    {
+      "name": "Negative - wrong service token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Wrong token is rejected', () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Service-Token",
+            "value": "wrong-token"
+          }
+        ],
+        "url": "{{fareBaseUrl}}/internal/v1/fares/estimates/{{estimateId}}"
+      }
+    },
+    {
+      "name": "Negative setup - create another estimate",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estimate created', () => pm.response.to.have.status(201));",
+              "if (pm.response.code === 201) { pm.environment.set('negativeEstimateId', pm.response.json().estimateId); }"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{passengerToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"pickup\": \"Wellawatte\",\n  \"destination\": \"Colombo Fort\",\n  \"distanceKm\": 10.50\n}"
+        },
+        "url": "{{fareBaseUrl}}/api/v1/fares/estimates"
+      }
+    },
+    {
+      "name": "Negative - payment before ride completion",
+      "description": "Run the Ride request 'Negative setup - create another assigned ride' first.",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Early payment is rejected', () => { pm.response.to.have.status(422); pm.expect(pm.response.json().code).to.eql('RIDE_NOT_COMPLETED'); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{passengerToken}}"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{$guid}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"rideId\": \"{{negativeRideId}}\",\n  \"simulationOutcome\": \"SUCCESS\",\n  \"methodLabel\": \"SIMULATED_CARD\"\n}"
+        },
+        "url": "{{fareBaseUrl}}/api/v1/payments"
+      }
+    }
+  ]
+}

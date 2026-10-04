@@ -1,0 +1,17 @@
+services:
+  ride-db:
+    image: postgres:17-alpine
+    container_name: ridelink-ride-db
+    environment:
+      POSTGRES_DB: ride_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${RIDE_DB_PASSWORD:-ridelink-local-only}
+    ports: ["55433:5432"]
+    volumes: [ride-db-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ride_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+volumes:
+  ride-db-data:
