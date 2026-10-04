@@ -11,9 +11,27 @@ spring:
     open-in-view: false
   flyway:
     enabled: true
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
 
 server:
   port: ${ACCOUNT_PORT:8081}
+
+security:
+  jwt:
+    secret: ${JWT_SECRET}
+    issuer: ridelink-account-service
+    expiry-seconds: 3600
+  internal:
+    service-token: ${SERVICE_TOKEN}
+
+bootstrap:
+  admin:
+    email: ${BOOTSTRAP_ADMIN_EMAIL:}
+    password: ${BOOTSTRAP_ADMIN_PASSWORD:}
+    full-name: ${BOOTSTRAP_ADMIN_FULL_NAME:}
+    phone: ${BOOTSTRAP_ADMIN_PHONE:}
 
 springdoc:
   swagger-ui:

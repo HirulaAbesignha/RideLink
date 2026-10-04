@@ -19,6 +19,17 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
 
+services:
+  account:
+    base-url: ${ACCOUNT_SERVICE_URL:http://localhost:8081}
+
+security:
+  jwt:
+    secret: ${JWT_SECRET}
+    issuer: ridelink-account-service
+  internal:
+    service-token: ${SERVICE_TOKEN}
+
 management:
   endpoints:
     web:

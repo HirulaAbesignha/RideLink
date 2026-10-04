@@ -1,0 +1,192 @@
+{
+  "info": {
+    "_postman_id": "7ac046d1-d67f-43f0-8cb9-b789415645f0",
+    "name": "RideLink - Account Service",
+    "description": "Member 1 demonstration flow for registration, login, profiles, admin status and internal account summaries.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01 - Service status",
+      "request": { "method": "GET", "header": [], "url": "{{accountBaseUrl}}/api/v1/status" }
+    },
+    {
+      "name": "02 - Register passenger",
+      "event": [{
+        "listen": "test",
+        "script": { "type": "text/javascript", "exec": [
+          "pm.test('Passenger created', () => pm.response.to.have.status(201));",
+          "if (pm.response.code === 201) { pm.environment.set('passengerAccountId', pm.response.json().accountId); }"
+        ] }
+      }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"passenger.demo@example.com\",\n  \"password\": \"PassengerPass1\",\n  \"fullName\": \"Demo Passenger\",\n  \"phone\": \"+94771111111\"\n}" },
+        "url": "{{accountBaseUrl}}/api/v1/accounts/passengers"
+      }
+    },
+    {
+      "name": "03 - Register driver",
+      "event": [{
+        "listen": "test",
+        "script": { "type": "text/javascript", "exec": [
+          "pm.test('Driver role assigned by server', () => {",
+          "  pm.response.to.have.status(201);",
+          "  pm.expect(pm.response.json().role).to.eql('DRIVER');",
+          "});",
+          "if (pm.response.code === 201) { pm.environment.set('driverAccountId', pm.response.json().accountId); }"
+        ] }
+      }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"driver.demo@example.com\",\n  \"password\": \"DriverPass1\",\n  \"fullName\": \"Demo Driver\",\n  \"phone\": \"+94772222222\"\n}" },
+        "url": "{{accountBaseUrl}}/api/v1/accounts/drivers"
+      }
+    },
+    {
+      "name": "04 - Login passenger",
+      "event": [{
+        "listen": "test",
+        "script": { "type": "text/javascript", "exec": [
+          "pm.test('Passenger login succeeds', () => pm.response.to.have.status(200));",
+          "if (pm.response.code === 200) { pm.environment.set('passengerToken', pm.response.json().accessToken); }"
+        ] }
+      }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"passenger.demo@example.com\",\n  \"password\": \"PassengerPass1\"\n}" },
+        "url": "{{accountBaseUrl}}/api/v1/auth/login"
+      }
+    },
+    {
+      "name": "05 - Login driver",
+      "event": [{
+        "listen": "test",
+        "script": { "type": "text/javascript", "exec": [
+          "pm.test('Driver login succeeds', () => pm.response.to.have.status(200));",
+          "if (pm.response.code === 200) { pm.environment.set('driverToken', pm.response.json().accessToken); }"
+        ] }
+      }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"driver.demo@example.com\",\n  \"password\": \"DriverPass1\"\n}" },
+        "url": "{{accountBaseUrl}}/api/v1/auth/login"
+      }
+    },
+    {
+      "name": "06 - Login admin",
+      "event": [{
+        "listen": "test",
+        "script": { "type": "text/javascript", "exec": [
+          "pm.test('Admin login succeeds', () => pm.response.to.have.status(200));",
+          "if (pm.response.code === 200) { pm.environment.set('adminToken', pm.response.json().accessToken); }"
+        ] }
+      }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}" },
+        "url": "{{accountBaseUrl}}/api/v1/auth/login"
+      }
+    },
+    {
+      "name": "07 - View my passenger profile",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{passengerToken}}" }],
+        "url": "{{accountBaseUrl}}/api/v1/accounts/me"
+      }
+    },
+    {
+      "name": "08 - Update my passenger profile",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{passengerToken}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": { "mode": "raw", "raw": "{\n  \"fullName\": \"Updated Demo Passenger\",\n  \"phone\": \"+94773333333\"\n}" },
+        "url": "{{accountBaseUrl}}/api/v1/accounts/me"
+      }
+    },
+    {
+      "name": "09 - Admin suspends passenger",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": { "mode": "raw", "raw": "{\n  \"status\": \"SUSPENDED\"\n}" },
+        "url": "{{accountBaseUrl}}/api/v1/accounts/{{passengerAccountId}}/status"
+      }
+    },
+    {
+      "name": "10 - Suspended passenger login is rejected",
+      "event": [{
+        "listen": "test",
+        "script": { "type": "text/javascript", "exec": [
+          "pm.test('Suspended account is blocked', () => {",
+          "  pm.response.to.have.status(403);",
+          "  pm.expect(pm.response.json().code).to.eql('ACCOUNT_SUSPENDED');",
+          "});"
+        ] }
+      }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"passenger.demo@example.com\",\n  \"password\": \"PassengerPass1\"\n}" },
+        "url": "{{accountBaseUrl}}/api/v1/auth/login"
+      }
+    },
+    {
+      "name": "11 - Internal account summary",
+      "event": [{
+        "listen": "test",
+        "script": { "type": "text/javascript", "exec": [
+          "pm.test('Summary excludes personal data', () => {",
+          "  pm.response.to.have.status(200);",
+          "  const body = pm.response.json();",
+          "  pm.expect(body).not.to.have.property('email');",
+          "  pm.expect(body).not.to.have.property('phone');",
+          "});"
+        ] }
+      }],
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "X-Service-Token", "value": "{{serviceToken}}" }],
+        "url": "{{accountBaseUrl}}/internal/v1/accounts/{{driverAccountId}}/summary"
+      }
+    },
+    {
+      "name": "12 - Wrong service token is rejected",
+      "event": [{
+        "listen": "test",
+        "script": { "type": "text/javascript", "exec": [
+          "pm.test('Wrong service token is rejected', () => pm.response.to.have.status(401));"
+        ] }
+      }],
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "X-Service-Token", "value": "wrong-token" }],
+        "url": "{{accountBaseUrl}}/internal/v1/accounts/{{driverAccountId}}/summary"
+      }
+    },
+    {
+      "name": "13 - Admin reactivates passenger",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": { "mode": "raw", "raw": "{\n  \"status\": \"ACTIVE\"\n}" },
+        "url": "{{accountBaseUrl}}/api/v1/accounts/{{passengerAccountId}}/status"
+      }
+    }
+  ]
+}
