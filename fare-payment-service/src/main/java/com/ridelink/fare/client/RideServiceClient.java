@@ -28,8 +28,8 @@ public class RideServiceClient {
     private final String serviceToken;
 
     public RideServiceClient(
-            @Value("${ride.service.url:http://localhost:8083}") String rideServiceUrl,
-            @Value("${service.token}") String serviceToken) {
+            @Value("${services.ride.base-url}") String rideServiceUrl,
+            @Value("${security.internal.service-token}") String serviceToken) {
 
         JdkClientHttpRequestFactory requestFactory = new JdkClientHttpRequestFactory(
                 HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(2)).build());

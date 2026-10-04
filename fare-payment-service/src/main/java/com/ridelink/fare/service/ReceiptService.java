@@ -26,19 +26,16 @@ public class ReceiptService {
 
     public ReceiptResponse getReceipt(UUID paymentId, UUID callerId, boolean admin) {
 
-        // 1. Check whether payment exists
         var payment = paymentRepository.findById(paymentId);
 
         if (payment.isEmpty()) {
             throw new FareApiException(404, "PAYMENT_NOT_FOUND", "Payment not found");
         }
 
-        // 2. Failed payment cannot have a receipt
         if (!"PAID".equals(payment.get().getStatus())) {
             throw new FareApiException(422, "RECEIPT_NOT_AVAILABLE", "Receipt is not available for a failed payment");
         }
 
-        // 3. Find receipt
         Receipt receipt = receiptRepository
                 .findByPaymentId(paymentId)
                 .orElseThrow(() -> new FareApiException(404, "PAYMENT_NOT_FOUND", "Receipt not found"));
@@ -47,7 +44,6 @@ public class ReceiptService {
             throw new FareApiException(403, "ACCESS_DENIED", "This receipt belongs to another passenger");
         }
 
-        // 4. Return receipt response
         return new ReceiptResponse(
                 receipt.getReceiptNumber(),
                 receipt.getPaymentId(),

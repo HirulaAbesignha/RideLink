@@ -12,10 +12,11 @@ Java 17 / Spring Boot microservice owned by Member 4. It owns the `payment_db` d
 
 ## Configure and run
 
-Requirements: Java 17, PostgreSQL, and a local `payment_db` database. Set local environment variables in PowerShell; use random values of at least 32 characters for both secrets, matching the values used by the other services:
+Requirements: Java 17 and PostgreSQL. Start the local database with `docker compose up -d`, then set local environment variables in PowerShell. Use random values of at least 32 characters for both secrets, matching the values used by the other services:
 
 ```powershell
 $env:PAYMENT_DB_PASSWORD = "your-local-database-password"
+$env:PAYMENT_DB_URL = "jdbc:postgresql://localhost:55434/payment_db"
 $env:JWT_SECRET = "your-local-random-secret-at-least-32-characters"
 $env:SERVICE_TOKEN = "your-shared-local-service-token-at-least-32-characters"
 $env:RIDE_SERVICE_URL = "http://localhost:8083"

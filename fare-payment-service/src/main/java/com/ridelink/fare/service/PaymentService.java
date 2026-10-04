@@ -42,7 +42,6 @@ public class PaymentService {
             String idempotencyKey,
             UUID passengerId) {
 
-        // 1. Check idempotency key
         var existingPayment =
                 paymentRepository.findByIdempotencyKey(idempotencyKey);
 
@@ -61,11 +60,9 @@ public class PaymentService {
             return new PaymentCreationResult(toResponse(payment), true);
         }
 
-        // 2. Get ride information from Ride Service
         RideSummaryResponse ride =
                 rideServiceClient.getRideSummary(request.rideId());
 
-        // 3. Ride must be COMPLETED
         if (ride == null) {
             throw new FareApiException(503, "RIDE_SERVICE_UNAVAILABLE", "Ride Service returned no ride summary");
         }
@@ -79,7 +76,6 @@ public class PaymentService {
             throw new FareApiException(422, "FINAL_FARE_NOT_FOUND", "The completed ride has no valid final fare");
         }
 
-        // 4. Check whether ride is already paid
         var existingRidePayment = paymentRepository
                 .findFirstByRideIdAndStatusOrderByRecordedAtDesc(request.rideId(), "PAID");
 
@@ -88,7 +84,6 @@ public class PaymentService {
             throw new FareApiException(409, "RIDE_ALREADY_PAID", "Ride already has a successful payment");
         }
 
-        // 5. Create payment
         Payment payment = new Payment();
 
         payment.setPaymentId(UUID.randomUUID());
@@ -102,6 +97,7 @@ public class PaymentService {
 
         if ("SUCCESS".equalsIgnoreCase(request.simulationOutcome())) {
             payment.setStatus("PAID");
+            payment.setSuccessfulRideId(ride.rideId());
         } else {
             payment.setStatus("FAILED");
         }
@@ -112,7 +108,6 @@ public class PaymentService {
 
         Payment savedPayment = paymentRepository.save(payment);
 
-        // 6. Create receipt only for successful payment
         if ("PAID".equals(savedPayment.getStatus())) {
             createReceipt(savedPayment, ride);
         }
@@ -142,9 +137,7 @@ public class PaymentService {
         receipt.setMethodLabel(payment.getMethodLabel());
         receipt.setIssuedAt(Instant.now());
 
-        receipt.setNotice(
-                "This is a simulated payment receipt. "
-                        + "No real money was charged.");
+        receipt.setNotice("Simulated payment - no real money was transferred");
 
         receiptRepository.save(receipt);
     }

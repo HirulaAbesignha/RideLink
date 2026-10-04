@@ -23,6 +23,9 @@ public class Payment {
     @Column(name = "passenger_id")
     private UUID passengerId;
 
+    @Column(name = "successful_ride_id", unique = true)
+    private UUID successfulRideId;
+
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal amount;
 
@@ -62,6 +65,14 @@ public class Payment {
 
     public UUID getPassengerId() { return passengerId; }
     public void setPassengerId(UUID passengerId) { this.passengerId = passengerId; }
+
+    public UUID getSuccessfulRideId() {
+        return successfulRideId;
+    }
+
+    public void setSuccessfulRideId(UUID successfulRideId) {
+        this.successfulRideId = successfulRideId;
+    }
 
     public BigDecimal getAmount() {
         return amount;

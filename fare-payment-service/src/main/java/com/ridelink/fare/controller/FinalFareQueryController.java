@@ -35,7 +35,7 @@ public class FinalFareQueryController {
     public ResponseEntity<FinalFareResponse> getFinalFare(@PathVariable UUID rideId,
             @AuthenticationPrincipal Jwt jwt) {
         RideSummaryResponse ride = rideServiceClient.getRideSummary(rideId);
-        UUID callerId = UUID.fromString(jwt.getSubject());
+        UUID callerId = accountId(jwt);
         String role = jwt.getClaimAsString("role");
         boolean participant = callerId.equals(ride.passengerId()) || callerId.equals(ride.driverAccountId());
         if (!participant && !"ADMIN".equals(role)) {
@@ -45,5 +45,13 @@ public class FinalFareQueryController {
                 .orElseThrow(() -> new FareApiException(404, "FINAL_FARE_NOT_FOUND", "Final fare not found"));
         return ResponseEntity.ok(new FinalFareResponse(fare.getFareId(), fare.getRideId(), fare.getPassengerId(),
                 fare.getDistanceKm(), fare.getAmount(), fare.getCurrency(), fare.getRuleVersion(), fare.getCreatedAt()));
+    }
+
+    private UUID accountId(Jwt jwt) {
+        try {
+            return UUID.fromString(jwt.getSubject());
+        } catch (IllegalArgumentException ex) {
+            throw new FareApiException(401, "INVALID_TOKEN", "The token subject must be a UUID");
+        }
     }
 }

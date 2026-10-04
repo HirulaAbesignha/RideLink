@@ -11,9 +11,25 @@ spring:
     open-in-view: false
   flyway:
     enabled: true
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
 
 server:
   port: ${RIDE_PORT:8083}
+
+security:
+  jwt:
+    secret: ${JWT_SECRET}
+    issuer: ridelink-account-service
+  internal:
+    service-token: ${SERVICE_TOKEN}
+
+services:
+  driver:
+    base-url: ${DRIVER_SERVICE_URL:http://localhost:8082}
+  fare:
+    base-url: ${FARE_SERVICE_URL:http://localhost:8084}
 
 springdoc:
   swagger-ui:

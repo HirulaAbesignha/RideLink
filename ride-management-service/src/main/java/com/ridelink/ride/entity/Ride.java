@@ -1,6 +1,13 @@
 package com.ridelink.ride.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Version;
+
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
@@ -10,141 +17,156 @@ import java.util.UUID;
 public class Ride {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(nullable = false)
-    private UUID riderId;
+    @Column(name = "rider_id", nullable = false)
+    private UUID passengerId;
 
+    @Column(name = "driver_id")
     private UUID driverId;
 
-    @Column(nullable = false)
-    private String pickupLocation;
+    @Column(name = "driver_account_id")
+    private UUID driverAccountId;
 
-    @Column(nullable = false)
+    @Column(name = "pickup_location", nullable = false, length = 255)
+    private String pickup;
+
+    @Column(nullable = false, length = 255)
     private String destination;
 
-    @Column(nullable = false)
+    @Column(name = "service_area", nullable = false, length = 80)
     private String serviceArea;
 
-    @Column(nullable = false)
+    @Column(name = "distance_km", nullable = false, precision = 5, scale = 2)
     private BigDecimal distanceKm;
 
+    @Column(name = "seat_count", nullable = false)
+    private int seatCount;
+
+    @Column(name = "fare_estimate_id", nullable = false)
+    private UUID fareEstimateId;
+
+    @Column(name = "estimated_fare", nullable = false, precision = 12, scale = 2)
     private BigDecimal estimatedFare;
 
+    @Column(nullable = false, length = 3)
+    private String currency;
+
+    @Column(name = "final_fare", precision = 12, scale = 2)
     private BigDecimal finalFare;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 20)
     private RideStatus status;
 
-    @Column(nullable = false, updatable = false)
+    @Column(name = "idempotency_key", nullable = false, unique = true)
+    private UUID idempotencyKey;
+
+    @Column(name = "cancellation_reason", length = 255)
+    private String cancellationReason;
+
+    @Column(name = "accepted_at")
+    private Instant acceptedAt;
+
+    @Column(name = "started_at")
+    private Instant startedAt;
+
+    @Column(name = "completed_at")
+    private Instant completedAt;
+
+    @Column(name = "cancelled_at")
+    private Instant cancelledAt;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
+    @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
     @Version
-    private Long version;
+    @Column(nullable = false)
+    private long version;
 
-    public Ride() {
+    protected Ride() {
     }
 
-    public UUID getId() {
-        return id;
-    }
-
-    public UUID getRiderId() {
-        return riderId;
-    }
-
-    public void setRiderId(UUID riderId) {
-        this.riderId = riderId;
-    }
-
-    public UUID getDriverId() {
-        return driverId;
-    }
-
-    public void setDriverId(UUID driverId) {
-        this.driverId = driverId;
-    }
-
-    public String getPickupLocation() {
-        return pickupLocation;
-    }
-
-    public void setPickupLocation(String pickupLocation) {
-        this.pickupLocation = pickupLocation;
-    }
-
-    public String getDestination() {
-        return destination;
-    }
-
-    public void setDestination(String destination) {
+    public Ride(UUID passengerId, String pickup, String destination, String serviceArea,
+                BigDecimal distanceKm, int seatCount, UUID fareEstimateId,
+                BigDecimal estimatedFare, String currency, UUID idempotencyKey) {
+        Instant now = Instant.now();
+        this.id = UUID.randomUUID();
+        this.passengerId = passengerId;
+        this.pickup = pickup;
         this.destination = destination;
-    }
-
-    public String getServiceArea() {
-        return serviceArea;
-    }
-
-    public void setServiceArea(String serviceArea) {
         this.serviceArea = serviceArea;
-    }
-
-    public BigDecimal getDistanceKm() {
-        return distanceKm;
-    }
-
-    public void setDistanceKm(BigDecimal distanceKm) {
         this.distanceKm = distanceKm;
-    }
-
-    public BigDecimal getEstimatedFare() {
-        return estimatedFare;
-    }
-
-    public void setEstimatedFare(BigDecimal estimatedFare) {
+        this.seatCount = seatCount;
+        this.fareEstimateId = fareEstimateId;
         this.estimatedFare = estimatedFare;
+        this.currency = currency;
+        this.status = RideStatus.REQUESTED;
+        this.idempotencyKey = idempotencyKey;
+        this.createdAt = now;
+        this.updatedAt = now;
     }
 
-    public BigDecimal getFinalFare() {
-        return finalFare;
+    public void assign(UUID driverId, UUID driverAccountId) {
+        this.driverId = driverId;
+        this.driverAccountId = driverAccountId;
+        this.status = RideStatus.ASSIGNED;
+        touch();
     }
 
-    public void setFinalFare(BigDecimal finalFare) {
+    public void accept() {
+        this.status = RideStatus.ACCEPTED;
+        this.acceptedAt = Instant.now();
+        touch();
+    }
+
+    public void start() {
+        this.status = RideStatus.IN_PROGRESS;
+        this.startedAt = Instant.now();
+        touch();
+    }
+
+    public void complete(BigDecimal finalFare) {
         this.finalFare = finalFare;
+        this.status = RideStatus.COMPLETED;
+        this.completedAt = Instant.now();
+        touch();
     }
 
-    public RideStatus getStatus() {
-        return status;
+    public void cancel(String reason) {
+        this.status = RideStatus.CANCELLED;
+        this.cancellationReason = reason;
+        this.cancelledAt = Instant.now();
+        touch();
     }
 
-    public void setStatus(RideStatus status) {
-        this.status = status;
+    private void touch() {
+        this.updatedAt = Instant.now();
     }
 
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public Instant getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public Long getVersion() {
-        return version;
-    }
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = Instant.now();
-        updatedAt = createdAt;
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = Instant.now();
-    }
+    public UUID getId() { return id; }
+    public UUID getPassengerId() { return passengerId; }
+    public UUID getDriverId() { return driverId; }
+    public UUID getDriverAccountId() { return driverAccountId; }
+    public String getPickup() { return pickup; }
+    public String getDestination() { return destination; }
+    public String getServiceArea() { return serviceArea; }
+    public BigDecimal getDistanceKm() { return distanceKm; }
+    public int getSeatCount() { return seatCount; }
+    public UUID getFareEstimateId() { return fareEstimateId; }
+    public BigDecimal getEstimatedFare() { return estimatedFare; }
+    public String getCurrency() { return currency; }
+    public BigDecimal getFinalFare() { return finalFare; }
+    public RideStatus getStatus() { return status; }
+    public UUID getIdempotencyKey() { return idempotencyKey; }
+    public String getCancellationReason() { return cancellationReason; }
+    public Instant getAcceptedAt() { return acceptedAt; }
+    public Instant getStartedAt() { return startedAt; }
+    public Instant getCompletedAt() { return completedAt; }
+    public Instant getCancelledAt() { return cancelledAt; }
+    public Instant getCreatedAt() { return createdAt; }
+    public Instant getUpdatedAt() { return updatedAt; }
 }

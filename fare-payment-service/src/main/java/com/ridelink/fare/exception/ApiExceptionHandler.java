@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -34,9 +35,20 @@ public class ApiExceptionHandler {
         return response(400, "VALIDATION_FAILED", "One or more fields are invalid", request, List.of());
     }
 
-    @ExceptionHandler({MethodArgumentTypeMismatchException.class, HttpMessageNotReadableException.class})
-    ResponseEntity<ApiError> handleMalformedRequest(Exception ex, HttpServletRequest request) {
-        return response(400, "INVALID_IDENTIFIER", "Request body or identifier is invalid", request, List.of());
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    ResponseEntity<ApiError> handleInvalidIdentifier(Exception ex, HttpServletRequest request) {
+        return response(400, "INVALID_IDENTIFIER", "The supplied identifier is invalid", request, List.of());
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    ResponseEntity<ApiError> handleMalformedJson(Exception ex, HttpServletRequest request) {
+        return response(400, "MALFORMED_JSON", "The request body contains invalid JSON", request, List.of());
+    }
+
+    @ExceptionHandler(MissingRequestHeaderException.class)
+    ResponseEntity<ApiError> handleMissingHeader(MissingRequestHeaderException ex, HttpServletRequest request) {
+        return response(400, "MISSING_REQUIRED_HEADER",
+                "Required header is missing: " + ex.getHeaderName(), request, List.of());
     }
 
     @ExceptionHandler(Exception.class)

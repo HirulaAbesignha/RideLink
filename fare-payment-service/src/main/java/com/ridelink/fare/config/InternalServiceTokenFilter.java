@@ -1,24 +1,34 @@
 package com.ridelink.fare.config;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.List;
 
 @Component
 public class InternalServiceTokenFilter extends OncePerRequestFilter {
 
-    private final String expectedToken;
+    private final byte[] expectedToken;
+    private final SecurityErrorWriter errorWriter;
 
-    public InternalServiceTokenFilter(@Value("${service.token}") String expectedToken) {
-        this.expectedToken = expectedToken;
+    public InternalServiceTokenFilter(@Value("${security.internal.service-token}") String token,
+                                      SecurityErrorWriter errorWriter) {
+        if (token.length() < 32) {
+            throw new IllegalArgumentException("SERVICE_TOKEN must contain at least 32 characters");
+        }
+        this.expectedToken = token.getBytes(StandardCharsets.UTF_8);
+        this.errorWriter = errorWriter;
     }
 
     @Override
@@ -28,16 +38,17 @@ public class InternalServiceTokenFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
-            FilterChain filterChain) throws ServletException, IOException {
-        String supplied = request.getHeader("X-Service-Token");
-        boolean valid = supplied != null && MessageDigest.isEqual(
-                expectedToken.getBytes(StandardCharsets.UTF_8), supplied.getBytes(StandardCharsets.UTF_8));
-        if (!valid) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json");
-            response.getWriter().write("{\"status\":401,\"code\":\"INVALID_SERVICE_TOKEN\",\"message\":\"A valid service token is required\"}");
+                                    FilterChain filterChain) throws ServletException, IOException {
+        String value = request.getHeader("X-Service-Token");
+        byte[] supplied = value == null ? new byte[0] : value.getBytes(StandardCharsets.UTF_8);
+        if (!MessageDigest.isEqual(expectedToken, supplied)) {
+            errorWriter.write(request, response, 401, "INVALID_SERVICE_TOKEN",
+                    "The service token is missing or invalid");
             return;
         }
+        SecurityContextHolder.getContext().setAuthentication(
+                UsernamePasswordAuthenticationToken.authenticated(
+                        "internal-service", null, List.of(new SimpleGrantedAuthority("ROLE_SERVICE"))));
         filterChain.doFilter(request, response);
     }
 }
