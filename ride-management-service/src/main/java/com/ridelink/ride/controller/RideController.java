@@ -3,6 +3,7 @@ package com.ridelink.ride.controller;
 import com.ridelink.ride.api.dto.CancelRideRequest;
 import com.ridelink.ride.api.dto.CreateRideRequest;
 import com.ridelink.ride.api.dto.RideCreationResult;
+import com.ridelink.ride.api.dto.RidePageResponse;
 import com.ridelink.ride.api.dto.RideResponse;
 import com.ridelink.ride.api.error.ApiException;
 import com.ridelink.ride.entity.RideStatus;
@@ -13,7 +14,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -61,12 +61,12 @@ public class RideController {
 
     @GetMapping
     @Operation(summary = "List rides visible to the signed in account")
-    public Page<RideResponse> listRides(
+    public RidePageResponse listRides(
             @RequestParam(required = false) RideStatus status,
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size,
             @AuthenticationPrincipal Jwt jwt) {
-        return rideService.listRides(subject(jwt), role(jwt), status, page, size);
+        return RidePageResponse.from(rideService.listRides(subject(jwt), role(jwt), status, page, size));
     }
 
     @PostMapping("/{rideId}/accept")
