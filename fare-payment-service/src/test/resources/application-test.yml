@@ -9,3 +9,7 @@ spring:
       ddl-auto: none
   flyway:
     enabled: false
+service:
+  token: test-only-service-token-placeholder
+jwt:
+  secret: test-only-jwt-signing-secret-for-local-tests-123456
