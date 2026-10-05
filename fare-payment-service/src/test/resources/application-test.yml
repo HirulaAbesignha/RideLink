@@ -6,6 +6,20 @@ spring:
     password: ''
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: validate
   flyway:
-    enabled: false
+    enabled: true
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
+
+security:
+  jwt:
+    secret: test-only-jwt-signing-secret-for-local-tests-123456
+    issuer: ridelink-account-service
+  internal:
+    service-token: test-only-service-token-placeholder-with-32-characters
+
+services:
+  ride:
+    base-url: http://localhost:8083

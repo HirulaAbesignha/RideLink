@@ -32,9 +32,18 @@
       "request": {
         "method": "POST",
         "header": [
-          { "key": "Authorization", "value": "Bearer {{driverToken}}" },
-          { "key": "Content-Type", "value": "application/json" },
-          { "key": "X-Correlation-Id", "value": "{{$guid}}" }
+          {
+            "key": "Authorization",
+            "value": "Bearer {{driverToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-Correlation-Id",
+            "value": "{{$guid}}"
+          }
         ],
         "body": {
           "mode": "raw",
@@ -48,8 +57,14 @@
       "request": {
         "method": "PUT",
         "header": [
-          { "key": "Authorization", "value": "Bearer {{driverToken}}" },
-          { "key": "Content-Type", "value": "application/json" }
+          {
+            "key": "Authorization",
+            "value": "Bearer {{driverToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
         ],
         "body": {
           "mode": "raw",
@@ -63,8 +78,14 @@
       "request": {
         "method": "PATCH",
         "header": [
-          { "key": "Authorization", "value": "Bearer {{driverToken}}" },
-          { "key": "Content-Type", "value": "application/json" }
+          {
+            "key": "Authorization",
+            "value": "Bearer {{driverToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
         ],
         "body": {
           "mode": "raw",
@@ -78,8 +99,14 @@
       "request": {
         "method": "PATCH",
         "header": [
-          { "key": "Authorization", "value": "Bearer {{driverToken}}" },
-          { "key": "Content-Type", "value": "application/json" }
+          {
+            "key": "Authorization",
+            "value": "Bearer {{driverToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
         ],
         "body": {
           "mode": "raw",
@@ -93,7 +120,10 @@
       "request": {
         "method": "GET",
         "header": [
-          { "key": "Authorization", "value": "Bearer {{driverToken}}" }
+          {
+            "key": "Authorization",
+            "value": "Bearer {{driverToken}}"
+          }
         ],
         "url": "{{driverBaseUrl}}/api/v1/drivers/me"
       }
@@ -103,7 +133,10 @@
       "request": {
         "method": "GET",
         "header": [
-          { "key": "X-Service-Token", "value": "{{serviceToken}}" }
+          {
+            "key": "X-Service-Token",
+            "value": "{{serviceToken}}"
+          }
         ],
         "url": "{{driverBaseUrl}}/internal/v1/drivers/eligible?serviceArea=COLOMBO&seatCount=2"
       }
@@ -113,8 +146,14 @@
       "request": {
         "method": "POST",
         "header": [
-          { "key": "X-Service-Token", "value": "{{serviceToken}}" },
-          { "key": "Content-Type", "value": "application/json" }
+          {
+            "key": "X-Service-Token",
+            "value": "{{serviceToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
         ],
         "body": {
           "mode": "raw",
@@ -128,8 +167,14 @@
       "request": {
         "method": "POST",
         "header": [
-          { "key": "X-Service-Token", "value": "{{serviceToken}}" },
-          { "key": "Content-Type", "value": "application/json" }
+          {
+            "key": "X-Service-Token",
+            "value": "{{serviceToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
         ],
         "body": {
           "mode": "raw",
@@ -143,7 +188,10 @@
       "request": {
         "method": "DELETE",
         "header": [
-          { "key": "X-Service-Token", "value": "{{serviceToken}}" }
+          {
+            "key": "X-Service-Token",
+            "value": "{{serviceToken}}"
+          }
         ],
         "url": "{{driverBaseUrl}}/internal/v1/drivers/{{driverId}}/reservations/{{rideId}}"
       }
@@ -153,7 +201,10 @@
       "request": {
         "method": "GET",
         "header": [
-          { "key": "X-Service-Token", "value": "wrong-token" }
+          {
+            "key": "X-Service-Token",
+            "value": "wrong-token"
+          }
         ],
         "url": "{{driverBaseUrl}}/internal/v1/drivers/eligible?serviceArea=COLOMBO&seatCount=2"
       }
@@ -163,14 +214,52 @@
       "request": {
         "method": "PATCH",
         "header": [
-          { "key": "Authorization", "value": "Bearer {{driverToken}}" },
-          { "key": "Content-Type", "value": "application/json" }
+          {
+            "key": "Authorization",
+            "value": "Bearer {{driverToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
         ],
         "body": {
           "mode": "raw",
           "raw": "{\n  \"serviceArea\": \"\",\n  \"locationName\": \"\",\n  \"latitude\": 95,\n  \"longitude\": 79.8605\n}"
         },
         "url": "{{driverBaseUrl}}/api/v1/drivers/me/location"
+      }
+    },
+    {
+      "name": "Negative - passenger cannot update driver availability",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Passenger role is rejected', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{passengerToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"availability\": \"AVAILABLE\"\n}"
+        },
+        "url": "{{driverBaseUrl}}/api/v1/drivers/me/availability"
       }
     }
   ]

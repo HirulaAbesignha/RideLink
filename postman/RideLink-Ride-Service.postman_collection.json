@@ -1,0 +1,334 @@
+{
+  "info": {
+    "_postman_id": "79d1f4db-27ea-4a4c-b4d7-35e5bdbe97d9",
+    "name": "RideLink - Ride Management Service",
+    "description": "Member 3 ride workflow. Create a fare estimate and make the demo driver available before running the numbered requests.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01 - Service status",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{rideBaseUrl}}/api/v1/status"
+      }
+    },
+    {
+      "name": "02 - Create and assign ride",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Ride assigned', () => { pm.response.to.have.status(201); pm.expect(pm.response.json().status).to.eql('ASSIGNED'); });",
+              "if (pm.response.code === 201) { pm.environment.set('rideId', pm.response.json().rideId); }"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{passengerToken}}"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{$guid}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"pickup\": \"Wellawatte\",\n  \"destination\": \"Colombo Fort\",\n  \"serviceArea\": \"COLOMBO\",\n  \"distanceKm\": 10.50,\n  \"seatCount\": 2,\n  \"fareEstimateId\": \"{{estimateId}}\"\n}"
+        },
+        "url": "{{rideBaseUrl}}/api/v1/rides"
+      }
+    },
+    {
+      "name": "03 - View ride as passenger",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{passengerToken}}"
+          }
+        ],
+        "url": "{{rideBaseUrl}}/api/v1/rides/{{rideId}}"
+      }
+    },
+    {
+      "name": "04 - List passenger rides",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{passengerToken}}"
+          }
+        ],
+        "url": "{{rideBaseUrl}}/api/v1/rides?page=0&size=20"
+      }
+    },
+    {
+      "name": "05 - Accept ride as driver",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Ride accepted', () => { pm.response.to.have.status(200); pm.expect(pm.response.json().status).to.eql('ACCEPTED'); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{driverToken}}"
+          }
+        ],
+        "url": "{{rideBaseUrl}}/api/v1/rides/{{rideId}}/accept"
+      }
+    },
+    {
+      "name": "06 - Start ride as driver",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Ride started', () => { pm.response.to.have.status(200); pm.expect(pm.response.json().status).to.eql('IN_PROGRESS'); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{driverToken}}"
+          }
+        ],
+        "url": "{{rideBaseUrl}}/api/v1/rides/{{rideId}}/start"
+      }
+    },
+    {
+      "name": "07 - Complete ride as driver",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Ride completed', () => { pm.response.to.have.status(200); pm.expect(pm.response.json().status).to.eql('COMPLETED'); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{driverToken}}"
+          }
+        ],
+        "url": "{{rideBaseUrl}}/api/v1/rides/{{rideId}}/complete"
+      }
+    },
+    {
+      "name": "08 - Internal ride summary",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Service-Token",
+            "value": "{{serviceToken}}"
+          }
+        ],
+        "url": "{{rideBaseUrl}}/internal/v1/rides/{{rideId}}/summary"
+      }
+    },
+    {
+      "name": "Negative - passenger cannot accept ride",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Passenger is rejected', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{passengerToken}}"
+          }
+        ],
+        "url": "{{rideBaseUrl}}/api/v1/rides/{{rideId}}/accept"
+      }
+    },
+    {
+      "name": "Negative - wrong service token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Wrong token is rejected', () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Service-Token",
+            "value": "wrong-token"
+          }
+        ],
+        "url": "{{rideBaseUrl}}/internal/v1/rides/{{rideId}}/summary"
+      }
+    },
+    {
+      "name": "Negative setup - create another assigned ride",
+      "description": "Run Fare request 'Negative setup - create another estimate' first while the driver is available.",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Second ride assigned', () => pm.response.to.have.status(201));",
+              "if (pm.response.code === 201) { pm.environment.set('negativeRideId', pm.response.json().rideId); }"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{passengerToken}}"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{$guid}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"pickup\": \"Wellawatte\",\n  \"destination\": \"Colombo Fort\",\n  \"serviceArea\": \"COLOMBO\",\n  \"distanceKm\": 10.50,\n  \"seatCount\": 2,\n  \"fareEstimateId\": \"{{negativeEstimateId}}\"\n}"
+        },
+        "url": "{{rideBaseUrl}}/api/v1/rides"
+      }
+    },
+    {
+      "name": "Negative - driver starts before accepting",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Illegal transition is rejected', () => { pm.response.to.have.status(409); pm.expect(pm.response.json().code).to.eql('INVALID_RIDE_TRANSITION'); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{driverToken}}"
+          }
+        ],
+        "url": "{{rideBaseUrl}}/api/v1/rides/{{negativeRideId}}/start"
+      }
+    },
+    {
+      "name": "Negative cleanup - cancel second ride",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{passengerToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"reason\": \"Negative test complete\"\n}"
+        },
+        "url": "{{rideBaseUrl}}/api/v1/rides/{{negativeRideId}}/cancel"
+      }
+    },
+    {
+      "name": "Negative - no eligible driver",
+      "description": "Set the demo driver to OFFLINE and create a fresh estimate before running this request.",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('No driver is reported', () => { pm.response.to.have.status(409); pm.expect(pm.response.json().code).to.eql('NO_AVAILABLE_DRIVER'); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{passengerToken}}"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{$guid}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"pickup\": \"Wellawatte\",\n  \"destination\": \"Colombo Fort\",\n  \"serviceArea\": \"COLOMBO\",\n  \"distanceKm\": 10.50,\n  \"seatCount\": 2,\n  \"fareEstimateId\": \"{{negativeEstimateId}}\"\n}"
+        },
+        "url": "{{rideBaseUrl}}/api/v1/rides"
+      }
+    }
+  ]
+}

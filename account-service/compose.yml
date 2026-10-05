@@ -1,0 +1,20 @@
+services:
+  account-db:
+    image: postgres:17-alpine
+    container_name: ridelink-account-db
+    environment:
+      POSTGRES_DB: account_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${ACCOUNT_DB_PASSWORD:-ridelink-local-only}
+    ports:
+      - "55431:5432"
+    volumes:
+      - account-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d account_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  account-db-data:
