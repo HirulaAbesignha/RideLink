@@ -1,0 +1,34 @@
+RideLink live verification - 2026-10-05 09:32:21 +05:30
+
+Docker databases:
+NAME                    IMAGE                COMMAND                  SERVICE      CREATED         STATUS                   PORTS
+ridelink-account-db-1   postgres:17-alpine   "docker-entrypoint.s…"   account-db   4 minutes ago   Up 4 minutes (healthy)   0.0.0.0:55431->5432/tcp, [::]:55431->5432/tcp
+ridelink-driver-db-1    postgres:17-alpine   "docker-entrypoint.s…"   driver-db    4 minutes ago   Up 4 minutes (healthy)   0.0.0.0:55432->5432/tcp, [::]:55432->5432/tcp
+ridelink-payment-db-1   postgres:17-alpine   "docker-entrypoint.s…"   payment-db   4 minutes ago   Up 4 minutes (healthy)   0.0.0.0:55434->5432/tcp, [::]:55434->5432/tcp
+ridelink-ride-db-1      postgres:17-alpine   "docker-entrypoint.s…"   ride-db      4 minutes ago   Up 4 minutes (healthy)   0.0.0.0:55433->5432/tcp, [::]:55433->5432/tcp
+
+Service health:
+Port 8081: UP
+Port 8082: UP
+Port 8083: UP
+Port 8084: UP
+
+End-to-end API flow:
+[PASS] Register passenger -> HTTP 201
+[PASS] Register driver -> HTTP 201
+[PASS] Login passenger -> HTTP 200
+[PASS] Login driver -> HTTP 200
+[PASS] Create driver profile -> HTTP 201
+[PASS] Add vehicle -> HTTP 201
+[PASS] Update driver location -> HTTP 200
+[PASS] Set driver available -> HTTP 200
+[PASS] Create fare estimate -> HTTP 201
+[PASS] Create and assign ride -> HTTP 201
+[PASS] Driver accepts ride -> HTTP 200
+[PASS] Driver starts ride -> HTTP 200
+[PASS] Driver completes ride -> HTTP 200
+[PASS] View final fare -> HTTP 200
+[PASS] Record simulated payment -> HTTP 201
+[PASS] Retrieve receipt -> HTTP 200
+Verified ride: c875bb6f-b7b9-4ff0-bc49-724b5ff949f6
+Verified payment: 0d2d003d-5c3d-4a99-9c52-be46341ecf1d
